@@ -6,7 +6,9 @@
 
 3 create db
 
-4 run app
+4 run migrations
+
+5 run app
 
 # Requirements
 
