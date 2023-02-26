@@ -14,7 +14,7 @@ class Transaction(models.Model):
     user = models.IntegerField()
 
     class Meta:
-        ordering = ['created_at']
+        ordering = ['id']
 
     def __str__(self):
         return "transaction_id_" + str(self.id)

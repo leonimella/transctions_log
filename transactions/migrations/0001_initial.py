@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
                 ('user', models.IntegerField()),
             ],
             options={
-                'ordering': ['created_at'],
+                'ordering': ['id'],
             },
         ),
     ]

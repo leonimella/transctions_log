@@ -1,3 +1,4 @@
+from datetime import datetime
 from rest_framework import viewsets, permissions, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -10,14 +11,52 @@ class TransactionViewSet(mixins.ListModelMixin,
                          mixins.RetrieveModelMixin,
                          viewsets.GenericViewSet):
     """
-    API endpoint that allows users to be viewed or edited.
+    API endpoint that allows for transactions handling.
     """
-    queryset = Transaction.objects.all()
     serializer_class = TransactionSerializer
     permission_classes = [permissions.AllowAny]
+    start_date = None
+    end_date = None
 
-    # def get_queryset(self):
-    #     return Transaction.objects.get(user=1)
+    def get_queryset(self):
+        queryset = Transaction.objects.all()
+
+        if self.start_date is not None and self.end_date is not None:
+            queryset = queryset.filter(
+                created_at__range=(self.start_date, self.end_date))
+
+        type = self.request.query_params.get('type')
+        if type is not None:
+            queryset = queryset.filter(type=type)
+
+        merchant = self.request.query_params.get('merchant')
+        if merchant is not None:
+            queryset = queryset.filter(merchant=merchant)
+
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        dtFrom = self.request.query_params.get('from', None)
+        dtTo = self.request.query_params.get('to', None)
+
+        if dtFrom and dtTo is None or dtTo and dtFrom is None:
+            return Response(
+                data={'error': 'you must define both \'from\' and \'to\' parameters'},
+                status=400)
+
+        if dtFrom and dtTo:
+            start_date = datetime.strptime(dtFrom, '%Y-%m-%dT%H:%M:%S')
+            end_date = datetime.strptime(dtTo, '%Y-%m-%dT%H:%M:%S')
+
+            if start_date > end_date:
+                return Response(
+                    data={'error': '\'from\' parameter is ahead of \'to\''},
+                    status=400)
+
+            self.start_date = start_date
+            self.end_date = end_date
+
+        return super().list(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         type = request.data.get('type')
@@ -25,12 +64,14 @@ class TransactionViewSet(mixins.ListModelMixin,
             old_balance = self._calculate_balance()
             new_balance = old_balance - request.data.get('value')
             if new_balance < 0:
-                return Response(data={'error': 'insufficient balance'}, status=400)
+                return Response(
+                    data={'error': 'insufficient balance'}, status=400)
 
 
         merchant = request.data.get('merchant', None)
         if merchant is None and type == Transaction.TransactionTypes.EXPENSE:
-            return Response(data={'error': 'merchant can\'t be null'}, status=400)
+            return Response(
+                data={'error': 'merchant can\'t be null'}, status=400)
 
         return super().create(request, *args, **kwargs)
 
