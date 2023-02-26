@@ -1,10 +1,9 @@
-from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from .models import Transaction
+from .models import Transaction, User
 
-class TransactionSerializer(serializers.HyperlinkedModelSerializer):
+class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
         fields= ['id', 'type', 'value', 'merchant', 'user', 'created_at']

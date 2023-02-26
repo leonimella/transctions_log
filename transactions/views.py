@@ -22,7 +22,7 @@ class TransactionViewSet(mixins.ListModelMixin,
     end_date = None
 
     def get_queryset(self):
-        queryset = Transaction.objects.all()
+        queryset = Transaction.objects.filter(user=self.request.user)
 
         if self.start_date is not None and self.end_date is not None:
             queryset = queryset.filter(
@@ -64,7 +64,7 @@ class TransactionViewSet(mixins.ListModelMixin,
     def create(self, request, *args, **kwargs):
         type = request.data.get('type')
         if type != Transaction.TransactionTypes.DEPOSIT:
-            old_balance = self._calculate_balance()
+            old_balance = self._calculate_balance(request.user)
             new_balance = old_balance - request.data.get('value')
             if new_balance < 0:
                 return Response(
@@ -76,16 +76,16 @@ class TransactionViewSet(mixins.ListModelMixin,
             return Response(
                 data={'error': 'merchant can\'t be null'}, status=400)
 
+        request.data.update({'user': request.user})
         return super().create(request, *args, **kwargs)
 
     @action(detail=False, methods=['get'])
     def user_balance(self, request):
-        user = request.user
-        transactions = Transaction.objects.filter(user=user.id)
-        user_balance = self._calculate_balance(transactions)
+        user_balance = self._calculate_balance(request.user)
         return Response(data={'balance': user_balance}, status=200)
 
-    def _calculate_balance(self, transactions):
+    def _calculate_balance(self, user):
+        transactions = Transaction.objects.filter(user=user)
         user_balance = 0
         for t in transactions:
             if t.type == 1:

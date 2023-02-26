@@ -1,6 +1,13 @@
 from django.db import models
+from django.contrib.auth.models import User as DjangoUser
 
-# Transaction Model
+# User
+# Inherited from base user just for possible overrides
+class User(DjangoUser):
+    def __str__(self):
+        return self.username
+
+# Transaction
 class Transaction(models.Model):
     class TransactionTypes(models.IntegerChoices):
         DEPOSIT = 1
@@ -11,10 +18,10 @@ class Transaction(models.Model):
     value = models.PositiveBigIntegerField()
     merchant = models.CharField(max_length=255, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    user = models.IntegerField()
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
 
     class Meta:
-        ordering = ['id']
+        ordering = ['-created_at']
 
     def __str__(self):
         return "transaction_id_" + str(self.id)
