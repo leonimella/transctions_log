@@ -3,8 +3,11 @@ from rest_framework import viewsets, permissions, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import Transaction
-from .serializers import TransactionSerializer
+from .serializers import TransactionSerializer, UserSerializer
 
+class UserViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+    serializer_class = UserSerializer
+    permission_classes = [permissions.AllowAny]
 
 class TransactionViewSet(mixins.ListModelMixin,
                          mixins.CreateModelMixin,
@@ -14,7 +17,7 @@ class TransactionViewSet(mixins.ListModelMixin,
     API endpoint that allows for transactions handling.
     """
     serializer_class = TransactionSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
     start_date = None
     end_date = None
 
@@ -77,12 +80,12 @@ class TransactionViewSet(mixins.ListModelMixin,
 
     @action(detail=False, methods=['get'])
     def user_balance(self, request):
-        user_balance = self._calculate_balance()
+        user = request.user
+        transactions = Transaction.objects.filter(user=user.id)
+        user_balance = self._calculate_balance(transactions)
         return Response(data={'balance': user_balance}, status=200)
 
-    def _calculate_balance(transactions=None):
-        # TODO add real user
-        transactions = Transaction.objects.filter(user=1)
+    def _calculate_balance(self, transactions):
         user_balance = 0
         for t in transactions:
             if t.type == 1:
