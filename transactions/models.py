@@ -9,12 +9,12 @@ class Transaction(models.Model):
 
     type = models.IntegerField(choices=TransactionTypes.choices)
     value = models.PositiveBigIntegerField()
-    merchant = models.CharField(max_length=255)
+    merchant = models.CharField(max_length=255, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    user = models.IntegerField()
 
     class Meta:
         ordering = ['created_at']
 
     def __str__(self):
-        return "id " + str(self.id)
+        return "transaction_id_" + str(self.id)
