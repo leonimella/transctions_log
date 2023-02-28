@@ -74,7 +74,6 @@ class TransactionViewSet(mixins.ListModelMixin,
         return super().list(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
-        #TODO Validate request.data
         type = request.data.get('type')
         if type != Transaction.TransactionTypes.DEPOSIT:
             oldBalance = _calculate_balance(request.user)

@@ -61,7 +61,7 @@ class UsersTestCase(APITestCase):
         self.assertEqual('test_user', username)
         self.assertEqual('test_user@example.com', email)
 
-    def test_balance_should_return_correct_user_balance(self):
+    def test_should_return_correct_user_balance(self):
         # Making the User
         userData = {'username': 'test_user', 'email': 'test_user@example.com', 'password': '123456789'}
         response = self.client.post('/users/', data=userData, format='json')
@@ -378,3 +378,43 @@ class TransactionsTestCase(APITestCase):
         self.assertEqual(fromError, 'you must define both \'from\' and \'to\' parameters')
         self.assertEqual(toError, 'you must define both \'from\' and \'to\' parameters')
         self.assertEqual(wrongError, '\'from\' parameter is ahead of \'to\'')
+
+    def test_should_error_when_creating_expense_transaction_without_balance(self):
+        jane = User.objects.get(username='janedoe')
+
+        # Creating a DEPOSIT of 1000 units
+        deposit = {'type': self.DEPOSIT, 'merchant': None, 'value': 1000}
+        self.makePostRequest('/transactions/', deposit, jane)
+
+        # Spending 900 units
+        expense = {'type': self.EXPENSE, 'merchant': 'Merchant A', 'value': 900}
+        response = self.makePostRequest('/transactions/', expense, jane)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Spending another 200 units, going over Jane's balance of 1000 units
+        expense = {'type': self.EXPENSE, 'merchant': 'Merchant B', 'value': 200}
+        errorResponse = self.makePostRequest('/transactions/', expense, jane)
+        errorMessage = errorResponse.data['error']
+
+        self.assertEqual(errorResponse.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(errorMessage, 'insufficient balance')
+
+    def test_should_error_when_creating_withdraw_transaction_without_balance(self):
+        jane = User.objects.get(username='janedoe')
+
+        # Creating a DEPOSIT of 1000 units
+        deposit = {'type': self.DEPOSIT, 'merchant': None, 'value': 1000}
+        self.makePostRequest('/transactions/', deposit, jane)
+
+        # Spending 900 units
+        expense = {'type': self.WITHDRAW, 'merchant': None, 'value': 900}
+        response = self.makePostRequest('/transactions/', expense, jane)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Spending another 200 units, going over Jane's balance of 1000 units
+        expense = {'type': self.WITHDRAW, 'merchant': None, 'value': 200}
+        errorResponse = self.makePostRequest('/transactions/', expense, jane)
+        errorMessage = errorResponse.data['error']
+
+        self.assertEqual(errorResponse.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(errorMessage, 'insufficient balance')
