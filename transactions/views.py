@@ -30,15 +30,15 @@ class TransactionViewSet(mixins.ListModelMixin,
                          viewsets.GenericViewSet):
     serializer_class = TransactionSerializer
     permission_classes = [permissions.IsAuthenticated]
-    start_date = None
-    end_date = None
+    startDate = None
+    endDate = None
 
     def get_queryset(self):
         queryset = Transaction.objects.filter(user=self.request.user)
 
-        if self.start_date is not None and self.end_date is not None:
+        if self.startDate is not None and self.endDate is not None:
             queryset = queryset.filter(
-                created_at__range=(self.start_date, self.end_date))
+                created_at__range=(self.startDate, self.endDate))
 
         type = self.request.query_params.get('type')
         if type is not None:
@@ -60,16 +60,16 @@ class TransactionViewSet(mixins.ListModelMixin,
                 status=400)
 
         if dtFrom and dtTo:
-            start_date = datetime.strptime(dtFrom, '%Y-%m-%dT%H:%M:%S')
-            end_date = datetime.strptime(dtTo, '%Y-%m-%dT%H:%M:%S')
+            startDate = datetime.strptime(dtFrom, '%Y-%m-%d').date()
+            endDate = datetime.strptime(dtTo, '%Y-%m-%d').date()
 
-            if start_date > end_date:
+            if startDate > endDate:
                 return Response(
                     data={'error': '\'from\' parameter is ahead of \'to\''},
                     status=400)
 
-            self.start_date = start_date
-            self.end_date = end_date
+            self.startDate = startDate
+            self.endDate = endDate
 
         return super().list(request, *args, **kwargs)
 
@@ -77,9 +77,9 @@ class TransactionViewSet(mixins.ListModelMixin,
         #TODO Validate request.data
         type = request.data.get('type')
         if type != Transaction.TransactionTypes.DEPOSIT:
-            old_balance = _calculate_balance(request.user)
-            new_balance = old_balance - request.data.get('value')
-            if new_balance < 0:
+            oldBalance = _calculate_balance(request.user)
+            newBalance = oldBalance - request.data.get('value')
+            if newBalance < 0:
                 return Response(
                     data={'error': 'insufficient balance'}, status=400)
 
