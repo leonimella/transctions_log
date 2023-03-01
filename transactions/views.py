@@ -1,8 +1,9 @@
+import csv, io
 from datetime import datetime
 from rest_framework import viewsets, permissions, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Transaction
+from .models import Transaction, User
 from .serializers import TransactionSerializer, UserSerializer
 
 def _calculate_balance(user):
@@ -89,3 +90,51 @@ class TransactionViewSet(mixins.ListModelMixin,
 
         request.data.update({'user': request.user})
         return super().create(request, *args, **kwargs)
+
+    @action(detail=False, methods=['post'])
+    def csv_upload(self, request):
+        user = User.objects.get(pk=request.user.id)
+        userBalance = _calculate_balance(user)
+        convertType = {
+            'deposit': Transaction.TransactionTypes.DEPOSIT,
+            'withdraw': Transaction.TransactionTypes.WITHDRAW,
+            'expense': Transaction.TransactionTypes.EXPENSE
+        }
+
+        file = request.data['file'].read().decode('utf-8')
+        reader = csv.DictReader(io.StringIO(file))
+        try:
+            transactions = []
+            transactionsBalance = 0
+            for i, line in enumerate(reader):
+                createdAt = line.get('created_at', None)
+                merchant = line.get('merchant', '')
+                value = line.get('value', None)
+                transactionType = convertType.get(
+                    line.get('type', 'unknown'), 0)
+
+                if (transactionType == 0):
+                    raise Exception(f'unknown transaction type at line {i+1}, must be: deposit, withdraw or expense')
+
+                if (transactionType == convertType['expense'] and merchant == ''):
+                    raise Exception(f'empty merchant for expense transaction at line {i+1}')
+
+                if (value is None):
+                    raise Exception(f'empty value for transaction at line {i+1}')
+
+                parsedCreatedAt = datetime.strptime(createdAt,
+                                                    '%Y-%m-%dT%H:%M:%S')
+
+                transactions.append(Transaction(type=transactionType,
+                                                value=value,
+                                                merchant=merchant,
+                                                created_at=parsedCreatedAt,
+                                                user=user))
+
+            newTransactions = Transaction.objects.bulk_create(transactions)
+
+        except Exception as error:
+            return Response(data={'error': str(error)}, status=400)
+
+
+        return Response(data={'transction_count': len(newTransactions)}, status=200)
