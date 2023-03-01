@@ -26,7 +26,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -83,11 +83,11 @@ WSGI_APPLICATION = 'transaction_log.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'transactions_db',
-        'USER': 'postgres',
-        'PASSWORD': 'postgrespw',
-        'HOST': '127.0.0.1',
-        'PORT': '32768',
+        'NAME': os.getenv('PG_NAME', 'transactions_db'),
+        'USER':  os.getenv('PG_USER', 'postgres'),
+        'PASSWORD':  os.getenv('PG_PASSWORD', 'postgrespw'),
+        'HOST':  os.getenv('PG_HOST', '127.0.0.1'),
+        'PORT':  os.getenv('PG_PORT', '32768'),
     }
 }
 

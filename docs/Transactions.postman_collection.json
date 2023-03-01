@@ -1,0 +1,863 @@
+{
+	"info": {
+		"_postman_id": "2c9b0754-1fc6-4391-813a-a695fe22f665",
+		"name": "Transactions",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "2993978"
+	},
+	"item": [
+		{
+			"name": "Start Here - auth",
+			"item": [
+				{
+					"name": "01 - Sign Up",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"janedoe\",\r\n    \"email\": \"janedoe@mail.com\",\r\n    \"password\": \"1234567890\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/users/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"users",
+								""
+							]
+						},
+						"description": "Just fill in with the desired information. The password must has at least 8 characteres"
+					},
+					"response": []
+				},
+				{
+					"name": "02 - Authenticate",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();\r",
+									"pm.collectionVariables.set(\"token\", response.token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"janedoe\",\r\n    \"password\": \"1234567890\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/authenticate",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"authenticate"
+							]
+						},
+						"description": "Now use the same credentials from the preview request to authenticate.\n\n> Note!\n\nThis request will inject the token in the reponse and inject it automatically in the Authorization: TOKEN: auth_token header."
+					},
+					"response": []
+				}
+			],
+			"description": "These are the **User** and **Authentication** requests. To use this api you should start here.\n\n1. First create a new user\n2. Then Authenticate with the user that you just created\n    \n\nThat's it! Now you can create and list your transactions"
+		},
+		{
+			"name": "File Upload",
+			"item": [
+				{
+					"name": "Valid Transactions",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Conten",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8000/transactions/csv_upload/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"transactions",
+								"csv_upload",
+								""
+							]
+						},
+						"description": "A request made with a valid .csv file"
+					},
+					"response": [
+						{
+							"name": "200 - Success",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Conten",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "file",
+											"type": "file",
+											"src": "///wsl$/Ubuntu/home/leoni/Projetos/transaction_log/data_samples/transactions_valid.csv"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://localhost:8000/transactions/csv_upload/",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"transactions",
+										"csv_upload",
+										""
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Wed, 01 Mar 2023 04:59:34 GMT"
+								},
+								{
+									"key": "Server",
+									"value": "WSGIServer/0.2 CPython/3.8.10"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Vary",
+									"value": "Accept"
+								},
+								{
+									"key": "Allow",
+									"value": "POST, OPTIONS"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Length",
+									"value": "23"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "Referrer-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Cross-Origin-Opener-Policy",
+									"value": "same-origin"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"transction_count\": 17\n}"
+						}
+					]
+				},
+				{
+					"name": "Invalid Balance (bellow zero)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Conten",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8000/transactions/csv_upload/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"transactions",
+								"csv_upload",
+								""
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "400 - Bad Request",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Conten",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "file",
+											"type": "file",
+											"src": "///wsl$/Ubuntu/home/leoni/Projetos/transaction_log/data_samples/transactions_invalid_balance.csv"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://localhost:8000/transactions/csv_upload/",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"transactions",
+										"csv_upload",
+										""
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Wed, 01 Mar 2023 05:07:05 GMT"
+								},
+								{
+									"key": "Server",
+									"value": "WSGIServer/0.2 CPython/3.8.10"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Vary",
+									"value": "Accept"
+								},
+								{
+									"key": "Allow",
+									"value": "POST, OPTIONS"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Length",
+									"value": "42"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "Referrer-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Cross-Origin-Opener-Policy",
+									"value": "same-origin"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"error\": \"negative balance after line 16\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Invalid Type",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Conten",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8000/transactions/csv_upload/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"transactions",
+								"csv_upload",
+								""
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "400 - Bad Request",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Conten",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "file",
+											"type": "file",
+											"src": "///wsl$/Ubuntu/home/leoni/Projetos/transaction_log/data_samples/transactions_invalid_type.csv"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://localhost:8000/transactions/csv_upload/",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"transactions",
+										"csv_upload",
+										""
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Wed, 01 Mar 2023 05:07:39 GMT"
+								},
+								{
+									"key": "Server",
+									"value": "WSGIServer/0.2 CPython/3.8.10"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Vary",
+									"value": "Accept"
+								},
+								{
+									"key": "Allow",
+									"value": "POST, OPTIONS"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Length",
+									"value": "85"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "Referrer-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Cross-Origin-Opener-Policy",
+									"value": "same-origin"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"error\": \"unknown transaction type at line 4, must be: deposit, withdraw or expense\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Invalid Merchant",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Conten",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8000/transactions/csv_upload/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"transactions",
+								"csv_upload",
+								""
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "400 - Bad Request",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Conten",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "file",
+											"type": "file",
+											"src": "///wsl$/Ubuntu/home/leoni/Projetos/transaction_log/data_samples/transactions_invalid_merchant.csv"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://localhost:8000/transactions/csv_upload/",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"transactions",
+										"csv_upload",
+										""
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Wed, 01 Mar 2023 05:07:53 GMT"
+								},
+								{
+									"key": "Server",
+									"value": "WSGIServer/0.2 CPython/3.8.10"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Vary",
+									"value": "Accept"
+								},
+								{
+									"key": "Allow",
+									"value": "POST, OPTIONS"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Length",
+									"value": "60"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "Referrer-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Cross-Origin-Opener-Policy",
+									"value": "same-origin"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"error\": \"empty merchant for expense transaction at line 4\"\n}"
+						}
+					]
+				}
+			],
+			"description": "This folder contains a collection of file upload requests so you can add transactions to the system. The system will assign the transactions on the .csv file to the current logged in user!\n\nFor your convenience, on each request there is a example response for the error and the success requests"
+		},
+		{
+			"name": "Transactions",
+			"item": [
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Conten",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"type\": 2,\r\n    \"value\": 100,\r\n    \"merchant\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/transactions/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"transactions",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List All",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Conten",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8000/transactions/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"transactions",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List by type",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Conten",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8000/transactions/?type=2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"transactions",
+								""
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "1",
+									"description": "Deposits",
+									"disabled": true
+								},
+								{
+									"key": "type",
+									"value": "2",
+									"description": "Withdrawals"
+								},
+								{
+									"key": "type",
+									"value": "3",
+									"description": "Expenses",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List by merchant",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Conten",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8000/transactions/?merchant=Supermarket",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"transactions",
+								""
+							],
+							"query": [
+								{
+									"key": "merchant",
+									"value": "Supermarket",
+									"description": "Exact match"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List by datetime range",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Conten",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8000/transactions/?from=2023-02-10&to=2023-02-22",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"transactions",
+								""
+							],
+							"query": [
+								{
+									"key": "from",
+									"value": "2023-02-10"
+								},
+								{
+									"key": "to",
+									"value": "2023-02-22"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Wrong datetime params",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Conten",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8000/transactions/?from=2023-02-22",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"transactions",
+								""
+							],
+							"query": [
+								{
+									"key": "from",
+									"value": "2023-02-22"
+								},
+								{
+									"key": "to",
+									"value": "2023-02-20",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Balance",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/users/balance",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"users",
+								"balance"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "These requests are for transaction handling. You can create new transactions with the POST Create and check the transactions on the GET requests below.\n\nJust as a reminder, the default page for this system is 10 items per page and you can change it by passing the following query parameters:\n\n- limit - How many items would you like to fetch in one request\n- offset - Use to paginate the results.\n    \n\nThe system will automatically calculate the next and previous pages if you pass these query parameters"
+		}
+	],
+	"auth": {
+		"type": "apikey",
+		"apikey": [
+			{
+				"key": "value",
+				"value": "TOKEN {{token}}",
+				"type": "string"
+			},
+			{
+				"key": "key",
+				"value": "Authorization",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "token",
+			"value": ""
+		}
+	]
+}
