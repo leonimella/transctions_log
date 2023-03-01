@@ -88,11 +88,13 @@ class TransactionViewSet(mixins.ListModelMixin,
             return Response(
                 data={'error': 'merchant can\'t be null'}, status=400)
 
-        request.data.update({'user': request.user})
+        request.data.update(
+            {'user': request.user, 'created_at': datetime.now()})
         return super().create(request, *args, **kwargs)
 
     @action(detail=False, methods=['post'])
     def csv_upload(self, request):
+        # Seting Up user and transaction data
         user = User.objects.get(pk=request.user.id)
         userBalance = _calculate_balance(user)
         convertType = {
@@ -101,17 +103,26 @@ class TransactionViewSet(mixins.ListModelMixin,
             'expense': Transaction.TransactionTypes.EXPENSE
         }
 
+        # Parsing .csv file
         file = request.data['file'].read().decode('utf-8')
         reader = csv.DictReader(io.StringIO(file))
+
+        # Looping through file
         try:
             transactions = []
-            transactionsBalance = 0
             for i, line in enumerate(reader):
+                # Parsing file data
                 createdAt = line.get('created_at', None)
                 merchant = line.get('merchant', '')
-                value = line.get('value', None)
+                value = int(line.get('value', 0))
                 transactionType = convertType.get(
                     line.get('type', 'unknown'), 0)
+                parsedCreatedAt = datetime.strptime(createdAt,
+                                                    '%Y-%m-%dT%H:%M:%S')
+
+                # Validate line data
+                if (userBalance < 0):
+                    raise Exception(f'negative balance after line {i}')
 
                 if (transactionType == 0):
                     raise Exception(f'unknown transaction type at line {i+1}, must be: deposit, withdraw or expense')
@@ -119,22 +130,26 @@ class TransactionViewSet(mixins.ListModelMixin,
                 if (transactionType == convertType['expense'] and merchant == ''):
                     raise Exception(f'empty merchant for expense transaction at line {i+1}')
 
-                if (value is None):
-                    raise Exception(f'empty value for transaction at line {i+1}')
+                if (value == 0):
+                    raise Exception(f'0 value for transaction at line {i+1}')
 
-                parsedCreatedAt = datetime.strptime(createdAt,
-                                                    '%Y-%m-%dT%H:%M:%S')
+                # Updating userBalance
+                if (transactionType != convertType['deposit']):
+                    userBalance -= value
+                else:
+                    userBalance += value
 
+                # Append the transaction to the list
                 transactions.append(Transaction(type=transactionType,
                                                 value=value,
                                                 merchant=merchant,
                                                 created_at=parsedCreatedAt,
                                                 user=user))
 
+            # Bulk saving the transactions in database
             newTransactions = Transaction.objects.bulk_create(transactions)
 
         except Exception as error:
             return Response(data={'error': str(error)}, status=400)
 
-
-        return Response(data={'transction_count': len(newTransactions)}, status=200)
+        return Response(data={'transction_count': len(newTransactions)}, status=201)

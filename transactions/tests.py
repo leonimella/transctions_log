@@ -67,14 +67,18 @@ class UsersTestCase(APITestCase):
         response = self.client.post('/users/', data=userData, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         user = User.objects.get(username='test_user')
+        now = datetime.now()
 
         # Creating deposits Transactions
         expectedBalance = 0
         for i in range(5):
             depositType = Transaction.TransactionTypes.DEPOSIT
-            t = Transaction(type=depositType, value=1000, merchant=None, user=user)
+            t = Transaction(type=depositType,
+                            value=1000,
+                            merchant=None,
+                            user=user,
+                            created_at=now)
             t.save()
-
             expectedBalance += 1000
 
         # Preparing authenticated balance request
@@ -92,9 +96,12 @@ class UsersTestCase(APITestCase):
         # Creating Withdraw Transactions
         for i in range(2):
             depositType = Transaction.TransactionTypes.WITHDRAW
-            t = Transaction(type=depositType, value=200, merchant=None, user=user)
+            t = Transaction(type=depositType,
+                            value=200,
+                            merchant=None,
+                            user=user,
+                            created_at=now)
             t.save()
-
             expectedBalance -= 200
 
         # Asserting expected balance
@@ -106,9 +113,12 @@ class UsersTestCase(APITestCase):
         # Creating Withdraw Expenses
         for i in range(2):
             depositType = Transaction.TransactionTypes.WITHDRAW
-            t = Transaction(type=depositType, value=500, merchant='Merchant One', user=user)
+            t = Transaction(type=depositType,
+                            value=500,
+                            merchant=None,
+                            user=user,
+                            created_at=now)
             t.save()
-
             expectedBalance -= 500
 
         # Asserting expected balance
@@ -315,15 +325,14 @@ class TransactionsTestCase(APITestCase):
         now = datetime.now()
 
         # Creating 10 Deposits transactions
-        # Making each transaction rewinding created_at on each transaction
-        # in a way that the transaction id 1 and 10 will be 10 days apart
+        # transactions id 1 and 10 will be 10 days apart
         for i in range(1, 11):
+            createdAt = now - timedelta(days=11-i)
             type = Transaction.TransactionTypes.DEPOSIT
-            newTransaction = Transaction(type=type, value=100, user=jane)
-            newTransaction.save()
-
-            newTransaction.refresh_from_db()
-            newTransaction.created_at = now - timedelta(days=11-i)
+            newTransaction = Transaction(type=type,
+                                         value=100,
+                                         user=jane,
+                                         created_at=createdAt)
             newTransaction.save()
 
         fromParam = (now - timedelta(days=10)).strftime('%Y-%m-%d')

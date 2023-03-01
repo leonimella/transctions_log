@@ -17,7 +17,7 @@ class Transaction(models.Model):
     type = models.IntegerField(choices=TransactionTypes.choices)
     value = models.PositiveBigIntegerField()
     merchant = models.CharField(max_length=255, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField()
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
 
     class Meta:
