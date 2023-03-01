@@ -1,0 +1,5 @@
+type,value,merchant,created_at
+deposit,5000,,2023-02-26T19:59:49
+withdraw,300,,2023-02-25T19:59:49
+expense,100,Merchant One,2023-02-24T19:59:49
+unknown,300,,2023-02-23T19:59:49
